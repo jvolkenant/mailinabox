@@ -109,6 +109,7 @@ source setup/ssl.sh
 source setup/dns.sh
 source setup/mail-postfix.sh
 source setup/mail-dovecot.sh
+source setup/mail-fts-xapian.sh
 source setup/mail-users.sh
 source setup/dkim.sh
 source setup/spamassassin.sh
