@@ -271,6 +271,8 @@ def perform_backup(full_backup):
 	backup_cache_dir = os.path.join(backup_root, 'cache')
 	backup_dir = os.path.join(backup_root, 'encrypted')
 
+	xapian_indexes = os.path.join(env["STORAGE_ROOT"], 'mail/mailboxes/*/*/xapian-indexes')
+
 	# Are backups disabled?
 	if config["target"] == "off":
 		return
@@ -320,6 +322,7 @@ def perform_backup(full_backup):
 			"--verbosity", "warning", "--no-print-statistics",
 			"--archive-dir", backup_cache_dir,
 			"--exclude", backup_root,
+			"--exclude", xapian_indexes,
 			"--volsize", "250",
 			"--gpg-options", "'--cipher-algo=AES256'",
 			"--allow-source-mismatch",
@@ -392,6 +395,8 @@ def run_duplicity_verification():
 	config = get_backup_config(env)
 	backup_cache_dir = os.path.join(backup_root, 'cache')
 
+	xapian_indexes = os.path.join(env["STORAGE_ROOT"], 'mail/mailboxes/*/*/xapian-indexes')
+
 	shell('check_call', [
 		"/usr/bin/duplicity",
 		"--verbosity", "info",
@@ -399,6 +404,7 @@ def run_duplicity_verification():
 		"--compare-data",
 		"--archive-dir", backup_cache_dir,
 		"--exclude", backup_root,
+		"--exclude", xapian_indexes,
 		*get_duplicity_additional_args(env),
 		get_duplicity_target_url(config),
 		env["STORAGE_ROOT"],
