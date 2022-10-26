@@ -21,6 +21,7 @@ apt_install \
 
 phpenmod -v $PHP_VER imap
 
+apt_install php7.4-cli php7.4-common php7.4-curl php7.4-fpm php7.4-imap php7.4-json php7.4-mbstring php7.4-opcache php7.4-readline php7.4-soap php7.4-xml
 # Copy Z-Push into place.
 VERSION=2.6.2
 TARGETHASH=f0e8091a8030e5b851f5ba1f9f0e1a05b8762d80
@@ -104,4 +105,4 @@ restart_service php$PHP_VER-fpm
 
 # Fix states after upgrade
 
-hide_output php$PHP_VER /usr/local/lib/z-push/z-push-admin.php -a fixstates
+hide_output php7.4 /usr/local/lib/z-push/z-push-admin.php -a fixstates
