@@ -104,9 +104,13 @@ cat > /etc/logrotate.d/z-push <<EOF;
 }
 EOF
 
+tools/editconf.py /etc/php/7.4/fpm/pool.d/www.conf -c ';' \
+        env[PATH]=/usr/local/bin:/usr/bin:/bin
+
 # Restart service.
 
 restart_service php$PHP_VER-fpm
+restart_service php7.4-fpm
 
 # Fix states after upgrade
 
