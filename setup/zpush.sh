@@ -16,15 +16,19 @@ source /etc/mailinabox.conf # load global vars
 # Prereqs.
 
 echo "Installing Z-Push (Exchange/ActiveSync server)..."
+# Original PHP8.0 install
 apt_install \
        php${PHP_VER}-soap php${PHP_VER}-imap libawl-php php$PHP_VER-xml
 
 phpenmod -v $PHP_VER imap
 
-apt_install php7.4-cli php7.4-common php7.4-curl php7.4-fpm php7.4-imap php7.4-json php7.4-mbstring php7.4-opcache php7.4-readline php7.4-soap php7.4-xml
+# PHP 7.4 install
+apt_install libawl-php php7.4-cli php7.4-common php7.4-curl php7.4-fpm php7.4-imap php7.4-json php7.4-mbstring php7.4-opcache php7.4-readline php7.4-soap php7.4-xml
+
 # Copy Z-Push into place.
-VERSION=2.6.2
-TARGETHASH=f0e8091a8030e5b851f5ba1f9f0e1a05b8762d80
+# Using fixes suggested from https://discourse.mailinabox.email/t/version-60-for-ubuntu-22-04-is-released/9558/52
+VERSION=2.6.2-php7.4-php8
+TARGETHASH=b7fabc75dc86ee745122b85615802519219eee58
 needs_update=0 #NODOC
 if [ ! -f /usr/local/lib/z-push/version ]; then
 	needs_update=1 #NODOC
@@ -34,7 +38,8 @@ elif [[ $VERSION != $(cat /usr/local/lib/z-push/version) ]]; then
 fi
 if [ $needs_update == 1 ]; then
 	# Download
-	wget_verify "https://github.com/Z-Hub/Z-Push/archive/refs/tags/$VERSION.zip" $TARGETHASH /tmp/z-push.zip
+	#wget_verify "https://github.com/Z-Hub/Z-Push/archive/refs/tags/$VERSION.zip" $TARGETHASH /tmp/z-push.zip
+	wget_verify "https://github.com/jvolkenant/Z-Push/archive/refs/heads/$VERSION.zip" $TARGETHASH /tmp/z-push.zip
 
 	# Extract into place.
 	rm -rf /usr/local/lib/z-push /tmp/z-push
