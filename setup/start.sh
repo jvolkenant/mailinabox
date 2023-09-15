@@ -101,6 +101,8 @@ PUBLIC_IPV6=$PUBLIC_IPV6
 PRIVATE_IP=$PRIVATE_IP
 PRIVATE_IPV6=$PRIVATE_IPV6
 MTA_STS_MODE=${DEFAULT_MTA_STS_MODE:-enforce}
+CUSTOM_TTL=${DEFAULT_CUSTOM_TTL:-86400}
+SOLR=${DEFAULT_SOLR:-}
 EOF
 
 # Start service configuration.
@@ -109,6 +111,7 @@ source setup/ssl.sh
 source setup/dns.sh
 source setup/mail-postfix.sh
 source setup/mail-dovecot.sh
+source setup/solr.sh
 source setup/mail-users.sh
 source setup/dkim.sh
 source setup/spamassassin.sh
