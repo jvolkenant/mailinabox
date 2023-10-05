@@ -509,11 +509,11 @@ $TTL 86400          ; default time to live
 		if querytype == "NS":
 			customttl = 86400
 		else:
-            try:
-                customttl = env["CUSTOM_TTL"]
-            except KeyError:
-                # No environment variable named CUSTOM_TTL found in /etc/mailinabox.conf
-                customttl = 86400
+			try:
+				customttl = env["CUSTOM_TTL"]
+			except KeyError:
+				# No environment variable named CUSTOM_TTL found in /etc/mailinabox.conf
+				customttl = 86400
 		if subdomain:
 			zone += subdomain
 		zone += "\t{}\tIN\t{}\t".format(customttl, querytype)
