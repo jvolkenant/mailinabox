@@ -506,9 +506,13 @@ $TTL 86400          ; default time to live
 
 	# Add records.
 	for subdomain, querytype, value, _explanation in records:
+		if querytype == "NS":
+			customttl = 86400
+		else:
+			customttl = env["CUSTOM_TTL"]
 		if subdomain:
 			zone += subdomain
-		zone += "\tIN\t" + querytype + "\t"
+		zone += "\t{}\tIN\t{}\t".format(customttl, querytype)
 		if querytype == "TXT":
 			# Divide into 255-byte max substrings.
 			v2 = ""
