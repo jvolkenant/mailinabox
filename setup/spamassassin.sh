@@ -24,8 +24,9 @@ echo "Installing SpamAssassin..."
 apt_install spampd razor pyzor libmail-dkim-perl
 
 # Allow spamassassin to download new rules.
-tools/editconf.py /etc/default/spamassassin \
-	CRON=1
+systemctl enable spamassassin-maintenance.timer
+systemctl start spamassassin-maintenance.service
+
 
 # Configure pyzor, which is a client to a live database of hashes of
 # spam emails. Set the pyzor configuration directory to something sane.
