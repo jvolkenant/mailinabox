@@ -110,9 +110,8 @@ hide_output add-apt-repository -y universe
 # Install the duplicity PPA.
 hide_output add-apt-repository -y ppa:duplicity-team/duplicity-release-git
 
-# Stock PHP is now 8.1, but we're transitioning through 8.0 because
-# of Nextcloud.
-hide_output add-apt-repository --y ppa:ondrej/php
+# Remove use of ondrej php repo as 26.04 give us php 8.5
+rm -f /etc/apt/sources.list.d/ondrej-ubuntu-php-jammy.list
 
 # ### Update Packages
 
