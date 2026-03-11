@@ -10,13 +10,33 @@ if [ -z "${NONINTERACTIVE:-}" ]; then
 	if [ ! -f /usr/bin/dialog ] || [ ! -f /usr/bin/python3 ] || [ ! -f /usr/bin/pip3 ]; then
 		echo "Installing packages needed for setup..."
 		apt-get -q -q update
-		apt_get_quiet install dialog python3 python3-pip  || exit 1
+		apt_get_quiet install dialog python3 python3-pip || exit 1
 	fi
 
 	# Installing email_validator is repeated in setup/management.sh, but in setup/management.sh
-	# we install it inside a virtualenv. In this script, we don't have the virtualenv yet
-	# so we install the python package globally.
-	hide_output pip3 install "email_validator>=1.0.0" || exit 1
+	# we install it inside a virtualenv. With 26.04, PEP 668 we need a venv here too
+	inst_dir=/usr/local/lib/mailinabox
+	mkdir -p $inst_dir
+	venv=$inst_dir/env
+	apt-get -q -q update
+	apt_get_quiet install virtualenv || exit 1
+	if [ ! -d $venv ]; then
+		# A bug specific to Ubuntu 22.04 and Python 3.10 requires
+		# forcing a virtualenv directory layout option (see #2335
+		# and https://github.com/pypa/virtualenv/pull/2415). In
+		# our issue, reportedly installing python3-distutils didn't
+		# fix the problem.)
+		export DEB_PYTHON_INSTALL_LAYOUT='deb'
+		hide_output virtualenv -ppython3 $venv
+	fi
+
+	# Upgrade pip because the Ubuntu-packaged version is out of date.
+	hide_output $venv/bin/pip install --upgrade pip
+
+	# Install other Python 3 packages used by the management daemon.
+	# The first line is the packages that Josh maintains himself!
+	# NOTE: email_validator is repeated in setup/questions.sh, so please keep the versions synced.
+	hide_output $venv/bin/pip install --upgrade "email_validator>=1.0.0"
 
 	message_box "Mail-in-a-Box Installation" \
 		"Hello and thanks for deploying a Mail-in-a-Box!
@@ -52,7 +72,7 @@ you really want.
 			# user hit ESC/cancel
 			exit
 		fi
-		while ! python3 management/mailconfig.py validate-email "$EMAIL_ADDR"
+		while ! $venv/bin/python3 management/mailconfig.py validate-email "$EMAIL_ADDR"
 		do
 			input_box "Your Email Address" \
 				"That's not a valid email address.\n\nWhat email address are you setting this box up to manage?" \
