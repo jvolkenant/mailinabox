@@ -68,7 +68,7 @@ cp --remove-destination conf/munin.service /lib/systemd/system/munin.service # t
 hide_output systemctl link -f /lib/systemd/system/munin.service
 hide_output systemctl daemon-reload
 hide_output systemctl unmask munin.service
-hide_output systemctl enable munin.service
+hide_output systemctl enable /lib/systemd/system/munin.service
 
 # Restart services.
 restart_service munin
