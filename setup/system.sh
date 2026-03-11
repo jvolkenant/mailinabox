@@ -381,4 +381,4 @@ cp -f conf/fail2ban/filter.d/* /etc/fail2ban/filter.d/
 # restart at the very end of setup.
 restart_service fail2ban
 
-systemctl enable fail2ban
+hide_output systemctl enable fail2ban
