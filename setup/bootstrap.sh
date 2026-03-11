@@ -18,11 +18,19 @@ if [ -z "$TAG" ]; then
 	# to get the latest version, so the first such line must be the one that we
 	# want to display in status checks.
 	#
-	# Allow point-release versions of the major releases, e.g. 22.04.1 is OK.
+	# Allow point-release versions of the major releases, e.g. 24.04.1 is OK.
 	UBUNTU_VERSION=$( lsb_release -d | sed 's/.*:\s*//' | sed 's/\([0-9]*\.[0-9]*\)\.[0-9]/\1/' )
+	if [ "$UBUNTU_VERSION" == "Ubuntu 26.04 LTS" ]; then
+		# This machine is running Ubuntu 26.04, which is supported by
+		# Mail-in-a-Box versions 'raccoon' and later.
+		TAG=raccoon # placeholder, needs new tag version later
 	if [ "$UBUNTU_VERSION" == "Ubuntu 22.04 LTS" ]; then
 		# This machine is running Ubuntu 22.04, which is supported by
 		# Mail-in-a-Box versions 60 and later.
+		echo "Support is ending for Ubuntu 22.04."
+		echo "Please immediately begin to migrate your data to"
+		echo "a new machine running Ubuntu 24.04. See:"
+		echo "https://mailinabox.email/maintenance.html#upgrade"
 		TAG=v76
 	elif [ "$UBUNTU_VERSION" == "Ubuntu 18.04 LTS" ]; then
 		# This machine is running Ubuntu 18.04, which is supported by
