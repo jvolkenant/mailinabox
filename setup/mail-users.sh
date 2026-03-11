@@ -35,26 +35,22 @@ sed -i "s/#\(\!include auth-sql.conf.ext\)/\1/"  /etc/dovecot/conf.d/10-auth.con
 # Specify how the database is to be queried for user authentication (passdb)
 # and where user mailboxes are stored (userdb).
 cat > /etc/dovecot/conf.d/auth-sql.conf.ext << EOF;
-passdb {
-  driver = sql
-  args = /etc/dovecot/dovecot-sql.conf.ext
+sql_driver = sqlite
+sqlite_path = /home/user-data/mail/users.sqlite
+
+passdb sql {
+  passdb_default_password_scheme = SHA512-CRYPT
+  query = SELECT email as user, password FROM users WHERE email='%{user}'
 }
-userdb {
-  driver = sql
-  args = /etc/dovecot/dovecot-sql.conf.ext
+
+userdb sql {
+  query = SELECT email AS user, "mail" as uid, "mail" as gid, "/home/user-data/mail/mailboxes/%{user | domain}/%{user | username}" as home, quota AS quota_storage_size FROM users WHERE email='%{user}'
+  iterate_query = SELECT email AS user FROM users
 }
 EOF
 
-# Configure the SQL to query for a user's metadata and password.
-cat > /etc/dovecot/dovecot-sql.conf.ext << EOF;
-driver = sqlite
-connect = $db_path
-default_pass_scheme = SHA512-CRYPT
-password_query = SELECT email as user, password FROM users WHERE email='%u';
-user_query = SELECT email AS user, "mail" as uid, "mail" as gid, "$STORAGE_ROOT/mail/mailboxes/%d/%n" as home, '*:bytes=' || quota AS quota_rule FROM users WHERE email='%u';
-iterate_query = SELECT email AS user FROM users;
-EOF
-chmod 0600 /etc/dovecot/dovecot-sql.conf.ext # per Dovecot instructions
+# Former files were combined to auth-sql.conf.ext
+rm -f /etc/dovecot/dovecot-sql.conf.ext
 
 # Have Dovecot provide an authorization service that Postfix can access & use.
 cat > /etc/dovecot/conf.d/99-local-auth.conf << EOF;

@@ -60,17 +60,27 @@ tools/editconf.py /etc/sysctl.d/mailinabox.conf \
 hide_output systemctl restart systemd-sysctl
 
 
-# Set the location where we'll store user mailboxes. '%d' is the domain name and '%n' is the
-# username part of the user's email address. We'll ensure that no bad domains or email addresses
-# are created within the management daemon.
+# Set the location where we'll store user mailboxes. '%{user | domain }' is the domain name and
+# '%{user | username }' is the username part of the user's email address. We'll ensure that
+# no bad domains or email addresses are created within the management daemon.
 tools/editconf.py /etc/dovecot/conf.d/10-mail.conf \
-	mail_location="maildir:$STORAGE_ROOT/mail/mailboxes/%d/%n" \
+	mail_path="$STORAGE_ROOT/mail/mailboxes/%{user | domain }/%{user | username }" \
+  mail_home="$STORAGE_ROOT/mail/mailboxes/%{user | domain }/%{user | username }" \
+	mail_driver=maildir \
 	mail_privileged_group=mail \
 	first_valid_uid=0
 
+# Dovecot 2.4.2 deprecated mail_location and replace it with mail_path & mail_driver
+# https://doc.dovecot.org/main/core/config/mail_location.html#mail_inbox_path reccomends
+# not setting this and is often used with mbox format (we use maildir)
+tools/editconf.py /etc/dovecot/conf.d/10-mail.conf -e \
+  mail_inbox_path= \
+  mail_location=
+
 # Create, subscribe, and mark as special folders: INBOX, Drafts, Sent, Trash, Spam and Archive.
 cp conf/dovecot-mailboxes.conf /etc/dovecot/conf.d/15-mailboxes.conf
-sed -i "s/#mail_plugins =\(.*\)/mail_plugins =\1 \$mail_plugins quota/" /etc/dovecot/conf.d/10-mail.conf
+# Remove quota plugin; needs fixed
+sed -i "s/mail_plugins =\(.*\)/#mail_plugins =\1/" /etc/dovecot/conf.d/10-mail.conf
 if ! grep -q "mail_plugins.* imap_quota" /etc/dovecot/conf.d/20-imap.conf; then
   sed -i "s/\(mail_plugins =.*\)/\1\n  mail_plugins = \$mail_plugins imap_quota/" /etc/dovecot/conf.d/20-imap.conf
 fi
@@ -103,21 +113,30 @@ fi
 # The LOGIN mechanism is supposedly for Microsoft products like Outlook to do SMTP login (I guess
 # since we're using Dovecot to handle SMTP authentication?).
 tools/editconf.py /etc/dovecot/conf.d/10-auth.conf \
-	disable_plaintext_auth=yes \
 	"auth_mechanisms=plain login"
+
+# Dovecot 2.4.2 no longer uses this setting, instead auth_allow_cleartext = no is used (the default)
+sudo sed -i 's/^\(disable_plaintext_auth\)/#\1/' /etc/dovecot/conf.d/10-auth.conf
 
 # Enable SSL, specify the location of the SSL certificate and private key files.
 # Use Mozilla's "Intermediate" recommendations at https://ssl-config.mozilla.org/#server=dovecot&server-version=2.2.33&config=intermediate&openssl-version=1.1.1,
 # except that the current version of Dovecot does not have a TLSv1.3 setting, so we only use TLSv1.2.
 tools/editconf.py /etc/dovecot/conf.d/10-ssl.conf \
 	ssl=required \
-	"ssl_cert=<$STORAGE_ROOT/ssl/ssl_certificate.pem" \
-	"ssl_key=<$STORAGE_ROOT/ssl/ssl_private_key.pem" \
+	"ssl_server_cert_file=$STORAGE_ROOT/ssl/ssl_certificate.pem" \
+	"ssl_server_key_file=$STORAGE_ROOT/ssl/ssl_private_key.pem" \
 	"ssl_min_protocol=TLSv1.2" \
 	"ssl_cipher_list=ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384" \
-	"ssl_prefer_server_ciphers=no" \
+	"ssl_server_prefer_ciphers=server" \
 	"ssl_dh_parameters_length=2048" \
-	"ssl_dh=<$STORAGE_ROOT/ssl/dh2048.pem"
+	"ssl_server_dh_file=$STORAGE_ROOT/ssl/dh2048.pem"
+
+# Remove deprecated dovecot configs
+sed -i 's/^\(ssl_cert\)/#\1/' /etc/dovecot/conf.d/10-ssl.conf
+sed -i 's/^\(ssl_key\)/#\1/' /etc/dovecot/conf.d/10-ssl.conf
+sed -i 's/^\(ssl_prefer_ciphers\)/#\1/' /etc/dovecot/conf.d/10-ssl.conf
+sed -i 's/^\(ssl_dh\)/#\1/' /etc/dovecot/conf.d/10-ssl.conf
+
 
 # Disable in-the-clear IMAP/POP because there is no reason for a user to transmit
 # login credentials outside of an encrypted connection. Only the over-TLS versions
@@ -140,7 +159,7 @@ tools/editconf.py /etc/dovecot/conf.d/20-imap.conf \
 # For new POP3 servers, the easiest way to set up UIDLs is to use IMAP's UIDVALIDITY
 # and UID values, the default in Dovecot.
 tools/editconf.py /etc/dovecot/conf.d/20-pop3.conf \
-	pop3_uidl_format="%08Xu%08Xv"
+	pop3_uidl_format="%{guid}"
 
 # ### LDA (LMTP)
 
@@ -160,7 +179,7 @@ service lmtp {
   #  group = postfix
   #}
   inet_listener lmtp {
-    address = 127.0.0.1
+    listen = 127.0.0.1
     port = 10026
   }
 }
@@ -169,7 +188,7 @@ service lmtp {
 # for Nextcloud to do imap authentication. (See #1577)
 service imap-login {
   inet_listener imap {
-    address = 127.0.0.1
+    listen = 127.0.0.1
     port = 143
   }
 }
@@ -187,7 +206,23 @@ tools/editconf.py /etc/dovecot/conf.d/15-lda.conf \
 
 # Enable the Dovecot sieve plugin which let's users run scripts that process
 # mail as it comes in.
-sed -i "s/#mail_plugins = .*/mail_plugins = \$mail_plugins sieve/" /etc/dovecot/conf.d/20-lmtp.conf
+cat > /etc/dovecot/conf.d/20-lmtp.conf << EOF;
+protocol lmtp {
+  mail_plugins {
+    sieve = yes
+  }
+
+  # This strips the domain name before delivery, since the default
+  # userdb in Debian is /etc/passwd, which doesn't include domain
+  # names in the user.  If you're using a different userdb backend
+  # that does include domain names, you may wish to remove this.  See
+  # https://doc.dovecot.org/2.4.1/howto/lmtp/exim.html and
+  # https://doc.dovecot.org/2.4.1/core/summaries/settings.html#auth_username_format
+  auth_username_format = %{user | username | lower}
+}
+EOF
+
+
 
 # Configure sieve. We'll create a global script that moves mail marked
 # as spam by Spamassassin into the user's Spam folder.
