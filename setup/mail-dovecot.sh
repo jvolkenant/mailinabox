@@ -235,22 +235,42 @@ EOF
 # (because then I suppose it might appear to the user as one of their scripts).
 # * `sieve_dir`: Directory for :personal include scripts for the include extension. This
 # is also where the ManageSieve service stores the user's scripts.
+# Format changed in 2.4+ https://doc.dovecot.org/latest/core/plugins/sieve.html#script-storage-type-personal
 cat > /etc/dovecot/conf.d/99-local-sieve.conf << EOF;
-plugin {
-  sieve_before = /etc/dovecot/sieve-spam.sieve
-  sieve_before2 = $STORAGE_ROOT/mail/sieve/global_before
-  sieve_after = $STORAGE_ROOT/mail/sieve/global_after
-  sieve = $STORAGE_ROOT/mail/sieve/%d/%n.sieve
-  sieve_dir = $STORAGE_ROOT/mail/sieve/%d/%n
-  sieve_redirect_envelope_from = recipient
+sieve_script before_spam {
+  type = before
+  path = $STORAGE_ROOT/mail/sieve/sieve-spam.sieve
 }
+
+sieve_script global_before {
+  type = before
+  path = $STORAGE_ROOT/mail/sieve/global_before
+}
+
+sieve_script global_after {
+  type = after
+  path = $STORAGE_ROOT/mail/sieve/global_after
+}
+
+sieve_script user {
+  type = personal
+  # This should be the directory where scripts are stored
+  path = /home/user-data/mail/sieve/%{user | domain}/%{user | username}
+
+  # This MUST be a file path, often a symlink managed by ManageSieve
+  active_path = /home/user-data/mail/sieve/%{user | domain}/%{user | username}.sieve
+}
+sieve_redirect_envelope_from = recipient
 EOF
 
 # Copy the global sieve script into where we've told Dovecot to look for it. Then
 # compile it. Global scripts must be compiled now because Dovecot won't have
 # permission later.
-cp conf/sieve-spam.txt /etc/dovecot/sieve-spam.sieve
-sievec /etc/dovecot/sieve-spam.sieve
+mkdir -p $STORAGE_ROOT/mail/sieve
+cp conf/sieve-spam.txt $STORAGE_ROOT/mail/sieve/sieve-spam.sieve
+sievec $STORAGE_ROOT/mail/sieve/sieve-spam.sieve
+# cleanup old location
+rm -f /etc/dovecot/sieve-spam.sieve /etc/dovecot/sieve-spam.svbin
 
 # PERMISSIONS
 
