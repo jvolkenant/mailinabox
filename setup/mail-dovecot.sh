@@ -255,10 +255,10 @@ sieve_script global_after {
 sieve_script user {
   type = personal
   # This should be the directory where scripts are stored
-  path = /home/user-data/mail/sieve/%{user | domain}/%{user | username}
+  path = $STORAGE_ROOT/mail/sieve/%{user | domain}/%{user | username}
 
   # This MUST be a file path, often a symlink managed by ManageSieve
-  active_path = /home/user-data/mail/sieve/%{user | domain}/%{user | username}.sieve
+  active_path = $STORAGE_ROOT/mail/sieve/%{user | domain}/%{user | username}.sieve
 }
 sieve_redirect_envelope_from = recipient
 EOF

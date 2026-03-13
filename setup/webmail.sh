@@ -22,9 +22,21 @@ source /etc/mailinabox.conf # load global vars
 echo "Installing Roundcube (webmail)..."
 apt_install \
 	dbconfig-common \
-	php"${PHP_VER}"-cli php"${PHP_VER}"-sqlite3 php"${PHP_VER}"-intl php"${PHP_VER}"-common php"${PHP_VER}"-curl php"${PHP_VER}"-imap \
+	php"${PHP_VER}"-cli php"${PHP_VER}"-sqlite3 php"${PHP_VER}"-intl php"${PHP_VER}"-common php"${PHP_VER}"-curl \
 	php"${PHP_VER}"-gd php"${PHP_VER}"-pspell php"${PHP_VER}"-mbstring php"${PHP_VER}"-xml libjs-jquery libjs-jquery-mousewheel libmagic1 \
 	sqlite3
+
+# Get php imap module with pecl
+apt_install php-pear php"${PHP_VER}"-dev libc-client-dev libkrb5-dev libssl-dev
+
+# Install imap plugin from pecl
+if ! pecl list | grep -q imap; then
+        hide_output bash -c "yes '' | pecl upgrade imap"
+
+        echo "extension=imap.so" > /etc/php/${PHP_VER}/mods-available/imap.ini        
+fi
+
+phpenmod -v "$PHP_VER" imap
 
 # Install Roundcube from source if it is not already present or if it is out of date.
 # Combine the Roundcube version number with the commit hash of plugins to track
