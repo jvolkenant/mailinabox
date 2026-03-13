@@ -21,8 +21,8 @@ echo "Installing Nextcloud (contacts/calendar)..."
 #   we automatically install intermediate versions as needed.
 # * The hash is the SHA1 hash of the ZIP package, which you can find by just running this script and
 #   copying it from the error message when it doesn't match what is below.
-nextcloud_ver=27.1.11
-nextcloud_hash=9f30c01a021c2e5a9e7baff119955afb3c552ebc
+nextcloud_ver=33.0.0
+nextcloud_hash=5f24702f43868a2447462e0de0203883e5cf6b1c
 
 # Nextcloud apps
 # --------------
@@ -36,16 +36,16 @@ nextcloud_hash=9f30c01a021c2e5a9e7baff119955afb3c552ebc
 # find by running: curl -sL <url> | sha1sum
 
 # Always ensure the versions are supported, see https://apps.nextcloud.com/apps/contacts
-contacts_ver=5.5.4
-contacts_hash=c4e3f2183a0088b829f8aa1b3af1f87c9a4c46a2
+contacts_ver=8.4.1
+contacts_hash=a73ef4b6a38217fc81e7bfca4cca0b01cb957c94
 
 # Always ensure the versions are supported, see https://apps.nextcloud.com/apps/calendar
-calendar_ver=4.7.20
-calendar_hash=12d876904e227156e39ca4335b18481b42a6d00f
+calendar_ver=6.2.1
+calendar_hash=b50203e77e7fa99e2387fa1e1b2c6804a7263674
 
 # Always ensure the versions are supported, see https://apps.nextcloud.com/apps/user_external
-user_external_ver=3.4.0
-user_external_hash=7f9d8f4dd6adb85a0e3d7622d85eeb7bfe53f3b4
+user_external_ver=4.0.0
+user_external_hash=214497dd8691f279ba3740797c565310f0793054
 
 # Developer advice (test plan)
 # ----------------------------
@@ -72,7 +72,7 @@ apt_install curl php"${PHP_VER}" php"${PHP_VER}"-fpm \
 
 
 # Get php imap module with pecl
-apt_install php-pear php8.5-dev libc-client-dev libkrb5-dev libssl-dev
+apt_install php-pear php"${PHP_VER}"-dev libc-client-dev libkrb5-dev libssl-dev
 
 # Install imap plugin from pecl
 if ! pecl list | grep -q imap; then
@@ -255,6 +255,20 @@ if [ ! -d /usr/local/lib/owncloud/ ] || [[ ! ${CURRENT_NEXTCLOUD_VER} =~ ^$nextc
 		if [[ ${CURRENT_NEXTCLOUD_VER} =~ ^25 ]]; then
 			InstallNextcloud 26.0.13 d5c10b650e5396d5045131c6d22c02a90572527c 5.5.3 b234ab410480a4106176a28f39c9b27f471d0473 4.7.6 cf8e68e7d945ee71933f5bb71a969faf152da55c 3.3.0 280d24eb2a6cb56b4590af8847f925c28d8d853e
 			CURRENT_NEXTCLOUD_VER="26.0.13"
+		fi
+		if [[ ${CURRENT_NEXTCLOUD_VER} =~ ^26 ]]; then
+			InstallNextcloud 27.1.11 9f30c01a021c2e5a9e7baff119955afb3c552ebc 5.5.4 c4e3f2183a0088b829f8aa1b3af1f87c9a4c46a2 4.7.20 12d876904e227156e39ca4335b18481b42a6d00f 3.4.0 7f9d8f4dd6adb85a0e3d7622d85eeb7bfe53f3b4
+			CURRENT_NEXTCLOUD_VER="27.1.11"
+		fi
+		# 28
+		# 29
+		# 30
+		# 31
+		# 32
+        if [[ ${CURRENT_NEXTCLOUD_VER} =~ ^32 ]]; then
+			# user_external only shows support up to 29
+			InstallNextcloud 33.0.0 5f24702f43868a2447462e0de0203883e5cf6b1c 8.4.1 a73ef4b6a38217fc81e7bfca4cca0b01cb957c94 6.2.1 b50203e77e7fa99e2387fa1e1b2c6804a7263674 3.4.0 7f9d8f4dd6adb85a0e3d7622d85eeb7bfe53f3b4
+			CURRENT_NEXTCLOUD_VER="33.0.0"
 		fi
 	fi
 
