@@ -79,33 +79,29 @@ tools/editconf.py /etc/dovecot/conf.d/10-mail.conf -e \
 
 # Create, subscribe, and mark as special folders: INBOX, Drafts, Sent, Trash, Spam and Archive.
 cp conf/dovecot-mailboxes.conf /etc/dovecot/conf.d/15-mailboxes.conf
-# Remove quota plugin; needs fixed
-sed -i "s/mail_plugins =\(.*\)/#mail_plugins =\1/" /etc/dovecot/conf.d/10-mail.conf
-if ! grep -q "mail_plugins.* imap_quota" /etc/dovecot/conf.d/20-imap.conf; then
-  sed -i "s/\(mail_plugins =.*\)/\1\n  mail_plugins = \$mail_plugins imap_quota/" /etc/dovecot/conf.d/20-imap.conf
-fi
 
 # configure stuff for quota support
-if ! grep -q "quota_status_success = DUNNO" /etc/dovecot/conf.d/90-quota.conf; then
-    cat > /etc/dovecot/conf.d/90-quota.conf << EOF;
-plugin {
-  quota = maildir
-
-  quota_grace = 10%%
-
-  quota_status_success = DUNNO
-  quota_status_nouser = DUNNO
-  quota_status_overquota = "522 5.2.2 Mailbox is full"
+rm -f /etc/dovecot/conf.d/90-quota.conf
+# This config needs to be earlier than lmtp/smtp's declaration of `quota = yes` as this one is
+# global and would throw an error if this global `mail_plugins` comes after the more narrow scope
+# within lmtp/smtp.
+cat > /etc/dovecot/conf.d/15-quota.conf << EOF;
+mail_plugins {
+  quota = yes
 }
+
+quota_status_success = DUNNO
+quota_status_nouser = DUNNO
+quota_status_overquota = "452 4.2.2 Mailbox is full and cannot receive any more emails"
 
 service quota-status {
-    executable = quota-status -p postfix
-    inet_listener {
-        port = 12340
+  executable = quota-status -p postfix
+    inet_listener quota-status {
+      port = 12340
     }
+  client_limit = 1
 }
 EOF
-fi
 
 # ### IMAP/POP
 
@@ -194,6 +190,10 @@ service imap-login {
 }
 protocol imap {
   mail_max_userip_connections = 40
+  mail_plugins {
+    imap_sieve = yes
+    imap_quota = yes
+  }
 }
 EOF
 
@@ -209,17 +209,11 @@ tools/editconf.py /etc/dovecot/conf.d/15-lda.conf \
 cat > /etc/dovecot/conf.d/20-lmtp.conf << EOF;
 protocol lmtp {
   mail_plugins {
+    quota = yes
     sieve = yes
   }
-
-  # This strips the domain name before delivery, since the default
-  # userdb in Debian is /etc/passwd, which doesn't include domain
-  # names in the user.  If you're using a different userdb backend
-  # that does include domain names, you may wish to remove this.  See
-  # https://doc.dovecot.org/2.4.1/howto/lmtp/exim.html and
-  # https://doc.dovecot.org/2.4.1/core/summaries/settings.html#auth_username_format
-  auth_username_format = %{user | username | lower}
 }
+lmtp_rcpt_check_quota = yes
 EOF
 
 
