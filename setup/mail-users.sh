@@ -34,17 +34,17 @@ sed -i "s/#\(\!include auth-sql.conf.ext\)/\1/"  /etc/dovecot/conf.d/10-auth.con
 
 # Specify how the database is to be queried for user authentication (passdb)
 # and where user mailboxes are stored (userdb).
-cat > /etc/dovecot/conf.d/auth-sql.conf.ext << EOF;
+cat > /etc/dovecot/conf.d/auth-sql.conf.ext << EOF
 sql_driver = sqlite
-sqlite_path = /home/user-data/mail/users.sqlite
+sqlite_path = $STORAGE_ROOT/mail/users.sqlite
 
 passdb sql {
   passdb_default_password_scheme = SHA512-CRYPT
-  query = SELECT email as user, password FROM users WHERE email='%{user}'
+  query = SELECT email as user, password FROM users WHERE email='\$%{user}'
 }
 
 userdb sql {
-  query = SELECT email AS user, "mail" as uid, "mail" as gid, "/home/user-data/mail/mailboxes/%{user | domain}/%{user | username}" as home, quota AS quota_storage_size FROM users WHERE email='%{user}'
+  query = SELECT email AS user, "mail" as uid, "mail" as gid, "$STORAGE_ROOT/mail/mailboxes/\$%{user | domain}/\$%{user | username}" as home, quota AS quota_storage_size FROM users WHERE email='\$%{user}'
   iterate_query = SELECT email AS user FROM users
 }
 EOF

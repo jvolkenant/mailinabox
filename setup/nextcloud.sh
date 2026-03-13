@@ -66,9 +66,22 @@ user_external_hash=7f9d8f4dd6adb85a0e3d7622d85eeb7bfe53f3b4
 apt-get purge -qq -y owncloud* # we used to use the package manager
 
 apt_install curl php"${PHP_VER}" php"${PHP_VER}"-fpm \
-	php"${PHP_VER}"-cli php"${PHP_VER}"-sqlite3 php"${PHP_VER}"-gd php"${PHP_VER}"-imap php"${PHP_VER}"-curl \
+	php"${PHP_VER}"-cli php"${PHP_VER}"-sqlite3 php"${PHP_VER}"-gd php"${PHP_VER}"-curl \
 	php"${PHP_VER}"-dev php"${PHP_VER}"-gd php"${PHP_VER}"-xml php"${PHP_VER}"-mbstring php"${PHP_VER}"-zip php"${PHP_VER}"-apcu \
 	php"${PHP_VER}"-intl php"${PHP_VER}"-imagick php"${PHP_VER}"-gmp php"${PHP_VER}"-bcmath
+
+
+# Get php imap module with pecl
+apt_install php-pear php8.5-dev libc-client-dev libkrb5-dev libssl-dev
+
+# Install imap plugin from pecl
+if ! pecl list | grep -q imap; then
+        hide_output bash -c "yes '' | pecl upgrade imap"
+
+        echo "extension=imap.so" > /etc/php/${PHP_VER}/mods-available/imap.ini        
+fi
+
+phpenmod -v "$PHP_VER" imap
 
 # Enable APC before Nextcloud tools are run.
 tools/editconf.py /etc/php/"$PHP_VER"/mods-available/apcu.ini -c ';' \

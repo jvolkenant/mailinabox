@@ -17,7 +17,17 @@ source /etc/mailinabox.conf # load global vars
 
 echo "Installing Z-Push (Exchange/ActiveSync server)..."
 apt_install \
-       php"${PHP_VER}"-soap php"${PHP_VER}"-imap libawl-php php"$PHP_VER"-xml php"${PHP_VER}"-intl
+       php"${PHP_VER}"-soap libawl-php php"$PHP_VER"-xml php"${PHP_VER}"-intl
+
+# Get php imap module with pecl
+apt_install php-pear php"${PHP_VER}"-dev libc-client-dev libkrb5-dev libssl-dev
+
+# Install imap plugin from pecl
+if ! pecl list | grep -q imap; then
+        hide_output bash -c "yes '' | pecl upgrade imap"
+
+        echo "extension=imap.so" > /etc/php/${PHP_VER}/mods-available/imap.ini
+fi
 
 phpenmod -v "$PHP_VER" imap
 
