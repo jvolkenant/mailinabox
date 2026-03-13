@@ -174,7 +174,7 @@ fi
 # not likely the user will want to change this, so we only ask on first
 # setup.
 if [ -z "${NONINTERACTIVE:-}" ]; then
-	if [ ! -f /etc/timezone ] || [ -n "${FIRST_TIME_SETUP:-}" ]; then
+	if [ -n "${FIRST_TIME_SETUP:-}" ]; then
 		# If the file is missing or this is the user's first time running
 		# Mail-in-a-Box setup, run the interactive timezone configuration
 		# tool.
@@ -183,12 +183,9 @@ if [ -z "${NONINTERACTIVE:-}" ]; then
 	fi
 else
 	# This is a non-interactive setup so we can't ask the user.
-	# If /etc/timezone is missing, set it to UTC.
-	if [ ! -f /etc/timezone ]; then
 		echo "Setting timezone to UTC."
-		echo "Etc/UTC" > /etc/timezone
+		timedatectl set-timezone "Etc/UTC"
 		restart_service rsyslog
-	fi
 fi
 
 # ### Seed /dev/urandom
