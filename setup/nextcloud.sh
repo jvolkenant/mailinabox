@@ -179,7 +179,7 @@ InstallNextcloud() {
 
 # If config.php exists, get version number, otherwise CURRENT_NEXTCLOUD_VER is empty.
 if [ -f "$STORAGE_ROOT/owncloud/config.php" ]; then
-	CURRENT_NEXTCLOUD_VER=$(php"$PHP_VER" -r "include(\"$STORAGE_ROOT/owncloud/config.php\"); echo(\$CONFIG['version']);")
+	CURRENT_NEXTCLOUD_VER=$(php"$PHP_VER" -r "include(\"$STORAGE_ROOT/owncloud/config.php\"); echo isset(\$CONFIG['version']) ? \$CONFIG['version'] : '';")
 else
 	CURRENT_NEXTCLOUD_VER=""
 fi
@@ -409,7 +409,7 @@ tools/editconf.py /etc/php/"$PHP_VER"/fpm/php.ini -c ';' \
 	short_open_tag=On
 
 # Set Nextcloud recommended opcache settings
-tools/editconf.py /etc/php/"$PHP_VER"/cli/conf.d/10-opcache.ini -c ';' \
+tools/editconf.py /etc/php/"$PHP_VER"/cli/php.ini -c ';' \
 	opcache.enable=1 \
 	opcache.enable_cli=1 \
 	opcache.interned_strings_buffer=8 \
