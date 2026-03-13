@@ -107,8 +107,8 @@ fi
 # come from there and minimal Ubuntu installs may have it turned off.
 hide_output add-apt-repository -y universe
 
-# Install the duplicity PPA.
-hide_output add-apt-repository -y ppa:duplicity-team/duplicity-release-git
+# Remove use of the duplicity PPA
+rm -f /etc/apt/sources.list.d/duplicity-team-ubuntu-duplicity-release-git-jammy.list
 
 # Remove use of ondrej php repo as 26.04 give us php 8.5
 rm -f /etc/apt/sources.list.d/ondrej-ubuntu-php-jammy.list
