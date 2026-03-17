@@ -124,8 +124,13 @@ tools/editconf.py /etc/dovecot/conf.d/10-ssl.conf \
 	"ssl_min_protocol=TLSv1.2" \
 	"ssl_cipher_list=ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384" \
 	"ssl_server_prefer_ciphers=server" \
-	"ssl_dh_parameters_length=2048" \
 	"ssl_server_dh_file=$STORAGE_ROOT/ssl/dh2048.pem"
+
+
+# This setting is deprecated in dovecot 2.3 and replaced with ssl_dh (and ssl_dh was removed in 2.4)
+# This setting does nothing if left in place; best to remove it to remove confusion
+tools/editconf.py /etc/dovecot/conf.d/10-ssl.conf -e \
+	"ssl_dh_parameters_length="
 
 # Remove deprecated dovecot configs
 sed -i 's/^\(ssl_cert\)/#\1/' /etc/dovecot/conf.d/10-ssl.conf
