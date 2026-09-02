@@ -275,18 +275,10 @@ if [ ! -d /usr/local/lib/owncloud/ ] || [[ ! ${CURRENT_NEXTCLOUD_VER} =~ ^$nextc
 			InstallNextcloud 25.0.7 a5a565c916355005c7b408dd41a1e53505e1a080 5.3.0 4b0a6666374e3b55cfd2ae9b72e1d458b87d4c8c 4.4.2 21a42e15806adc9b2618760ef94f1797ef399e2f 3.2.0 a494073dcdecbbbc79a9c77f72524ac9994d2eec
 			CURRENT_NEXTCLOUD_VER="25.0.7"
 		fi
-<<<<<<< HEAD
 		if [[ ${CURRENT_NEXTCLOUD_VER} =~ ^25 ]]; then
 			InstallNextcloud 26.0.13 d5c10b650e5396d5045131c6d22c02a90572527c 5.5.3 b234ab410480a4106176a28f39c9b27f471d0473 4.7.6 cf8e68e7d945ee71933f5bb71a969faf152da55c 3.3.0 280d24eb2a6cb56b4590af8847f925c28d8d853e
 			CURRENT_NEXTCLOUD_VER="26.0.13"
 		fi
-=======
-
-		# Hint: whenever you bump, remember this:
-		# - Run a server with the previous version
-		# - On a new if-else block, copy the versions/hashes from the previous version
-		# - Run sudo ./setup/start.sh on the new machine. Upon completion, test its basic functionalities.
->>>>>>> c9c0aba (Merge remote-tracking branch 'kiekerjan/upgradephp81' to prod)
 	fi
 
 	InstallNextcloud $nextcloud_ver $nextcloud_hash $contacts_ver $contacts_hash $calendar_ver $calendar_hash $user_external_ver $user_external_hash
