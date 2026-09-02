@@ -11,8 +11,8 @@ source /etc/mailinabox.conf # load global vars
 echo "Installing FTS-Xapian (Email Full Text Search)..."
 
 
-# Install dovecot-fts-xapian and tools needed for decode2text.sh
-apt_install dovecot-fts-xapian poppler-utils catdoc
+# Install dovecot-fts-xapian
+apt_install dovecot-fts-xapian
 
 # 90-fts.com - Full Text Search Config
 
@@ -33,7 +33,6 @@ plugin {
     fts_autoindex = yes
     fts_enforced = yes
     fts_autoindex_exclude = \\Trash
-    fts_decoder = decode2text
 }
 
 service indexer-worker {
@@ -50,23 +49,7 @@ service indexer-worker {
     # https://doc.dovecot.org/configuration_manual/service_configuration/
     executable = /usr/bin/nice -n 10 /usr/lib/dovecot/indexer-worker
 }
-
-service decode2text {
-    executable = script /usr/libexec/dovecot/decode2text.sh
-    user = dovecot
-    unix_listener decode2text {
-        mode = 0666
-    }
-}
 EOF
-
-# Setup the decode2text.sh script
-mkdir -p /usr/libexec/dovecot/
-cp -f /usr/share/doc/dovecot-core/examples/decode2text.sh /usr/libexec/dovecot/decode2text.sh
-chmod 755 /usr/libexec/dovecot/decode2text.sh
-
-# Setup xml2text script, decode2text.sh expects this file in the same directory
-ln -sf /usr/lib/dovecot/xml2text /usr/libexec/dovecot/xml2text
 
 # Daily cron
 cat <<EOF > /etc/cron.daily/mail-fts-xapian
