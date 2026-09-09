@@ -37,11 +37,11 @@ nextcloud_hash=5f24702f43868a2447462e0de0203883e5cf6b1c
 
 # Always ensure the versions are supported, see https://apps.nextcloud.com/apps/contacts
 contacts_ver=8.4.1
-contacts_hash=a73ef4b6a38217fc81e7bfca4cca0b01cb957c94
+contacts_hash=d6a2bbd95c5e8c51038e98797846bad99890d3ea
 
 # Always ensure the versions are supported, see https://apps.nextcloud.com/apps/calendar
 calendar_ver=6.2.1
-calendar_hash=b50203e77e7fa99e2387fa1e1b2c6804a7263674
+calendar_hash=d9cca35bf30e1c65d323f0e483a10f5059f55fbb
 
 # Always ensure the versions are supported, see https://apps.nextcloud.com/apps/user_external
 user_external_ver=4.0.0
@@ -267,7 +267,7 @@ if [ ! -d /usr/local/lib/owncloud/ ] || [[ ! ${CURRENT_NEXTCLOUD_VER} =~ ^$nextc
 		# 32
         if [[ ${CURRENT_NEXTCLOUD_VER} =~ ^32 ]]; then
 			# user_external only shows support up to 29
-			InstallNextcloud 33.0.0 5f24702f43868a2447462e0de0203883e5cf6b1c 8.4.1 a73ef4b6a38217fc81e7bfca4cca0b01cb957c94 6.2.1 b50203e77e7fa99e2387fa1e1b2c6804a7263674 3.4.0 7f9d8f4dd6adb85a0e3d7622d85eeb7bfe53f3b4
+			InstallNextcloud 33.0.0 5f24702f43868a2447462e0de0203883e5cf6b1c 8.4.1 d6a2bbd95c5e8c51038e98797846bad99890d3ea 6.2.1 d9cca35bf30e1c65d323f0e483a10f5059f55fbb 3.4.0 7f9d8f4dd6adb85a0e3d7622d85eeb7bfe53f3b4
 			CURRENT_NEXTCLOUD_VER="33.0.0"
 		fi
 	fi
