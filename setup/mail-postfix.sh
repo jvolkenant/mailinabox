@@ -86,7 +86,11 @@ tools/editconf.py /etc/postfix/main.cf \
 # Enable the 'submission' ports 465 and 587 and tweak their settings.
 #
 # * Enable authentication. It's disabled globally so that it is disabled on port 25,
-#   so we need to explicitly enable it here.
+#   so we need to explicitly enable it here. We also enforce `reject_authenticated_sender_login_mismatch`
+#   to prevent spoofing from authenticated users. Previously this config option was in main.cf which was
+#   global to postfix, however authenticated sending is not enabled on port 25, which caused it to emit
+#   a warning (warning: restriction 'reject_authenticated_sender_login_mismatch' ignored: no SASL support)
+#   on received mail.  Authenticated mail is only done on 465/587; so that config was moved here.
 # * Do not add the OpenDMAC Authentication-Results header. That should only be added
 #   on incoming mail. Omit the OpenDMARC milter by re-setting smtpd_milters to the
 #   OpenDKIM milter only. See dkim.sh.
@@ -102,11 +106,13 @@ tools/editconf.py /etc/postfix/master.cf -s -w \
 	"smtps=inet n       -       -       -       -       smtpd
 	  -o smtpd_tls_wrappermode=yes
 	  -o smtpd_sasl_auth_enable=yes
+	  -o smtpd_sender_restrictions=reject_authenticated_sender_login_mismatch
 	  -o syslog_name=postfix/submission
 	  -o smtpd_milters=inet:127.0.0.1:8891
 	  -o cleanup_service_name=authclean" \
 	"submission=inet n       -       -       -       -       smtpd
 	  -o smtpd_sasl_auth_enable=yes
+	  -o smtpd_sender_restrictions=reject_authenticated_sender_login_mismatch
 	  -o syslog_name=postfix/submission
 	  -o smtpd_milters=inet:127.0.0.1:8891
 	  -o smtpd_tls_security_level=encrypt
@@ -222,7 +228,6 @@ tools/editconf.py /etc/postfix/main.cf  -e lmtp_destination_recipient_limit=
 #
 # * `reject_non_fqdn_sender`: Reject not-nice-looking return paths.
 # * `reject_unknown_sender_domain`: Reject return paths with invalid domains.
-# * `reject_authenticated_sender_login_mismatch`: Reject if mail FROM address does not match the client SASL login
 # * `reject_rhsbl_sender`: Reject return paths that use blacklisted domains.
 # * `permit_sasl_authenticated`: Authenticated users (i.e. on port 587) can skip further checks.
 # * `permit_mynetworks`: Mail that originates locally can skip further checks.
@@ -237,7 +242,7 @@ tools/editconf.py /etc/postfix/main.cf  -e lmtp_destination_recipient_limit=
 # whitelisted) then postfix does a DEFER_IF_REJECT, which results in all "unknown user" sorts of messages turning into #NODOC
 # "450 4.7.1 Client host rejected: Service unavailable". This is a retry code, so the mail doesn't properly bounce. #NODOC
 tools/editconf.py /etc/postfix/main.cf \
-	smtpd_sender_restrictions="reject_non_fqdn_sender,reject_unknown_sender_domain,reject_authenticated_sender_login_mismatch,reject_rhsbl_sender dbl.spamhaus.org=127.0.1.[2..99]" \
+	smtpd_sender_restrictions="reject_non_fqdn_sender,reject_unknown_sender_domain,reject_rhsbl_sender dbl.spamhaus.org=127.0.1.[2..99]" \
 	smtpd_recipient_restrictions="permit_sasl_authenticated,permit_mynetworks,reject_rbl_client zen.spamhaus.org=127.0.0.[2..11],reject_unlisted_recipient,check_policy_service inet:127.0.0.1:10023,check_policy_service inet:127.0.0.1:12340"
 
 # Postfix connects to Postgrey on the 127.0.0.1 interface specifically. Ensure that
