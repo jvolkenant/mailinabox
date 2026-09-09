@@ -192,7 +192,7 @@ def get_ssh_config_value(parameter_name):
 	# Returns ssh configuration value for the provided parameter
 	import subprocess
 	try:
-		output = shell('check_output', ['sshd', '-T'])
+		output = shell('check_output', ['systemd-run', '-q', '--property=RuntimeDirectory=sshd', '--pipe', 'sshd', '-T'])
 	except FileNotFoundError:
 		# sshd is not installed. That's ok.
 		return None
