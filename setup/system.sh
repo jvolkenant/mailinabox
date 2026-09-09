@@ -276,7 +276,7 @@ if [ -z "${DISABLE_FIREWALL:-}" ]; then
 	# ssh might be running on an alternate port. Use sshd -T to dump sshd's #NODOC
 	# settings, find the port it is supposedly running on, and open that port #NODOC
 	# too. #NODOC
-	SSH_PORT=$(sshd -T 2>/dev/null | grep "^port " | sed "s/port //" | tr '\n' ' ') #NODOC
+	SSH_PORT=$(systemd-run -q --property=RuntimeDirectory=sshd --pipe sshd -T 2>/dev/null | grep "^port" | sed "s/port //" | tr '\n' ' ')
 	if [ -n "$SSH_PORT" ]; then
 	    for port in $SSH_PORT; do
 	        if [ "$port" != "22" ]; then
