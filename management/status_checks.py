@@ -303,8 +303,8 @@ def run_network_checks(env, output):
 	# Stop if we cannot make an outbound connection on port 25. Many residential
 	# networks block outbound port 25 to prevent their network from sending spam.
 	# See if we can reach one of Google's MTAs with a 5-second timeout.
-	_code, ret = shell("check_call", ["/bin/nc", "-z", "-w5", "aspmx.l.google.com", "25"], trap=True)
-	if ret == 0:
+	code, ret = shell("check_output", ["/bin/nc", "-z", "-w5", "aspmx.l.google.com", "25"], capture_stderr=True, trap=True)
+	if code == 0:
 		output.print_ok("Outbound mail (SMTP port 25) is not blocked.")
 	else:
 		output.print_error("""Outbound mail (SMTP port 25) seems to be blocked by your network. You
