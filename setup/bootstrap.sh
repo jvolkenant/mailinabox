@@ -24,7 +24,7 @@ if [ -z "$TAG" ]; then
 		# This machine is running Ubuntu 26.04, which is supported by
 		# Mail-in-a-Box versions 'raccoon' and later.
 		TAG=raccoon # placeholder, needs new tag version later
-	if [ "$UBUNTU_VERSION" == "Ubuntu 22.04 LTS" ]; then
+	elif [ "$UBUNTU_VERSION" == "Ubuntu 22.04 LTS" ]; then
 		# This machine is running Ubuntu 22.04, which is supported by
 		# Mail-in-a-Box versions 60 and later.
 		echo "Support is ending for Ubuntu 22.04."
