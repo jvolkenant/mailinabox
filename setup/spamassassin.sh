@@ -43,15 +43,29 @@ echo "public.pyzor.org:24441" > /etc/spamassassin/pyzor/servers
 # check with: pyzor --homedir /etc/mail/spamassassin/pyzor ping
 
 # Configure spampd:
-# * Pass messages on to docevot on port 10026. This is actually the default setting but we don't
+# * Pass messages on to dovecot on port 10026. This is actually the default setting but we don't
 #   want to lose track of it. (We've configured Dovecot to listen on this port elsewhere.)
 # * Increase the maximum message size of scanned messages from the default of 64KB to 500KB, which
 #   is Spamassassin (spamc)'s own default. Specified in KBytes.
 # * Disable localmode so Pyzor, DKIM and DNS checks can be used.
+# * Place pid file in dedicated RuntimeDirectory /run/spampd.
 tools/editconf.py /etc/spampd.cfg -s \
 	relayport=10026 \
 	maxsize=2000 \
-	local-only=0
+	local-only=0 \
+	pid=/run/spampd/spampd.pid
+
+# Run spampd with User/Group spampd and dedicated RuntimeDirectory so it has permission
+# to unlink its PID file on shutdown (fixing "Couldn't unlink pid file [Permission denied]").
+mkdir -p /etc/systemd/system/spampd.service.d
+cat > /etc/systemd/system/spampd.service.d/override.conf << EOF;
+[Service]
+User=spampd
+Group=spampd
+RuntimeDirectory=spampd
+PIDFile=/run/spampd/spampd.pid
+EOF
+systemctl daemon-reload
 
 # Spamassassin normally wraps spam as an attachment inside a fresh
 # email with a report about the message. This also protects the user
