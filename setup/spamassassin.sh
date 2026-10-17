@@ -208,15 +208,16 @@ rm -f /usr/bin/sa-learn-pipe.sh /usr/local/bin/sa-learn-pipe.sh # legacy locatio
 mkdir -p /usr/lib/dovecot/sieve/
 
 # https://doc.dovecot.org/2.4.1/core/config/spam_reporting.html
-# We did not do per-user learning before; Might be have better overall spam/ham score if
-# -u is omitted and is then global for all users?
+# We don't use -u <username> from the example as the file backend does not handle
+# seperate bayes databases for virtual mailbox users. There is no home directory to save
+# their database.
 cat > /usr/lib/dovecot/sieve/sa-learn-spam.sh <<EOF
 #!/bin/sh
-exec /usr/bin/sa-learn -u \${1} --spam
+exec /usr/bin/sa-learn --spam
 EOF
 cat > /usr/lib/dovecot/sieve/sa-learn-ham.sh <<EOF
 #!/bin/sh
-exec /usr/bin/sa-learn -u \${1} --ham
+exec /usr/bin/sa-learn --ham
 EOF
 
 chmod +x /usr/lib/dovecot/sieve/sa-learn-spam.sh /usr/lib/dovecot/sieve/sa-learn-ham.sh

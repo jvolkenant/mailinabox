@@ -13,4 +13,4 @@ if environment :matches "imap.user" "*" {
 }
 
 # "sa-learn-ham.sh" MUST live in /usr/lib/dovecot/sieve
-pipe :copy "sa-learn-ham.sh" [ "${username}" ];
+pipe :copy "sa-learn-ham.sh";
